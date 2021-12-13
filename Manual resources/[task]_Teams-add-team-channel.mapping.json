@@ -1,0 +1,14 @@
+[
+    {
+        "name":  "description",
+        "value":  "{{form.description}}"
+    },
+    {
+        "name":  "displayName",
+        "value":  "{{form.ChannelName}}"
+    },
+    {
+        "name":  "groupId",
+        "value":  "{{form.teams.GroupId}}"
+    }
+]
