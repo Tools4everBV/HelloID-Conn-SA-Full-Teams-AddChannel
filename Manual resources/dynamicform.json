@@ -1,85 +1,202 @@
 [
-  {
-    "label": "Select Team",
-    "fields": [
-      {
-        "key": "teams",
-        "templateOptions": {
-          "label": "Select Team",
-          "required": true,
-          "grid": {
-            "columns": [
-              {
-                "headerName": "Display Name",
-                "field": "DisplayName"
-              },
-              {
-                "headerName": "Description",
-                "field": "Description"
-              },
-              {
-                "headerName": "Mail Nick Name",
-                "field": "MailNickName"
-              },
-              {
-                "headerName": "Visibility",
-                "field": "Visibility"
-              },
-              {
-                "headerName": "Archived",
-                "field": "Archived"
-              },
-              {
-                "headerName": "Group Id",
-                "field": "GroupId"
-              }
-            ],
-            "height": 300,
-            "rowSelection": "single"
-          },
-          "dataSourceConfig": {
-            "dataSourceGuid": "$dataSourceGuid_0",
-            "input": {
-              "propertyInputs": []
-            }
-          },
-          "useFilter": true,
-          "useDefault": false
-        },
-        "type": "grid",
-        "summaryVisibility": "Show",
-        "requiresTemplateOptions": true,
-        "requiresKey": true,
-        "requiresDataSource": true
-      }
-    ]
-  },
-  {
-    "label": "Enter Channel Data",
-    "fields": [
-      {
-        "key": "ChannelName",
-        "templateOptions": {
-          "label": "New Channel Name",
-          "required": true
-        },
-        "type": "input",
-        "summaryVisibility": "Show",
-        "requiresTemplateOptions": true,
-        "requiresKey": true,
-        "requiresDataSource": false
-      },
-      {
-        "key": "description",
-        "templateOptions": {
-          "label": "Channel Description"
-        },
-        "type": "input",
-        "summaryVisibility": "Show",
-        "requiresTemplateOptions": true,
-        "requiresKey": true,
-        "requiresDataSource": false
-      }
-    ]
-  }
+    {
+        "label":  "Select Team",
+        "fields":  [
+                       {
+                           "key":  "searchValue",
+                           "templateOptions":  {
+                                                   "label":  "Search for DisplayName",
+                                                   "required":  true
+                                               },
+                           "type":  "input",
+                           "summaryVisibility":  "Show",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  false
+                       },
+                       {
+                           "key":  "teams",
+                           "templateOptions":  {
+                                                   "label":  "Select Team",
+                                                   "required":  true,
+                                                   "grid":  {
+                                                                "columns":  [
+                                                                                {
+                                                                                    "headerName":  "Display Name",
+                                                                                    "field":  "DisplayName"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Description",
+                                                                                    "field":  "Description"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Mail Nick Name",
+                                                                                    "field":  "MailNickName"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Mailaddress",
+                                                                                    "field":  "Mailaddress"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Visibility",
+                                                                                    "field":  "Visibility"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Group Id",
+                                                                                    "field":  "GroupId"
+                                                                                }
+                                                                            ],
+                                                                "height":  300,
+                                                                "rowSelection":  "single"
+                                                            },
+                                                   "dataSourceConfig":  {
+                                                                            "dataSourceGuid":  "$dataSourceGuid_0",
+                                                                            "input":  {
+                                                                                          "propertyInputs":  [
+                                                                                                                 {
+                                                                                                                     "propertyName":  "searchValue",
+                                                                                                                     "otherFieldValue":  {
+                                                                                                                                             "otherFieldKey":  "searchValue"
+                                                                                                                                         }
+                                                                                                                 }
+                                                                                                             ]
+                                                                                      }
+                                                                        },
+                                                   "useDefault":  false
+                                               },
+                           "type":  "grid",
+                           "summaryVisibility":  "Show",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  true
+                       }
+                   ]
+    },
+    {
+        "label":  "Enter Channel Data",
+        "fields":  [
+                       {
+                           "key":  "ChannelName",
+                           "templateOptions":  {
+                                                   "label":  "New Channel Name",
+                                                   "required":  true
+                                               },
+                           "type":  "input",
+                           "summaryVisibility":  "Show",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  false
+                       },
+                       {
+                           "key":  "description",
+                           "templateOptions":  {
+                                                   "label":  "Channel Description"
+                                               },
+                           "type":  "input",
+                           "summaryVisibility":  "Show",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  false
+                       },
+                       {
+                           "key":  "currentchannels",
+                           "templateOptions":  {
+                                                   "label":  "Current Channels",
+                                                   "required":  false,
+                                                   "grid":  {
+                                                                "columns":  [
+                                                                                {
+                                                                                    "headerName":  "Channel",
+                                                                                    "field":  "Channel"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Id",
+                                                                                    "field":  "Id"
+                                                                                }
+                                                                            ],
+                                                                "height":  300,
+                                                                "rowSelection":  "single"
+                                                            },
+                                                   "dataSourceConfig":  {
+                                                                            "dataSourceGuid":  "$dataSourceGuid_1",
+                                                                            "input":  {
+                                                                                          "propertyInputs":  [
+                                                                                                                 {
+                                                                                                                     "propertyName":  "selectedValue",
+                                                                                                                     "otherFieldValue":  {
+                                                                                                                                             "otherFieldKey":  "teams"
+                                                                                                                                         }
+                                                                                                                 }
+                                                                                                             ]
+                                                                                      }
+                                                                        },
+                                                   "useDefault":  false
+                                               },
+                           "type":  "grid",
+                           "summaryVisibility":  "Hide element",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  true
+                       },
+                       {
+                           "key":  "visibility",
+                           "templateOptions":  {
+                                                   "label":  "Security",
+                                                   "useObjects":  false,
+                                                   "options":  [
+                                                                   "Public",
+                                                                   "Private"
+                                                               ],
+                                                   "required":  true
+                                               },
+                           "type":  "radio",
+                           "defaultValue":  "Public",
+                           "summaryVisibility":  "Show",
+                           "textOrLabel":  "label",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  false
+                       },
+                       {
+                           "key":  "owner",
+                           "templateOptions":  {
+                                                   "label":  "Select owner",
+                                                   "required":  false,
+                                                   "grid":  {
+                                                                "columns":  [
+                                                                                {
+                                                                                    "headerName":  "Id",
+                                                                                    "field":  "Id"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Name",
+                                                                                    "field":  "Name"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "User",
+                                                                                    "field":  "User"
+                                                                                }
+                                                                            ],
+                                                                "height":  300,
+                                                                "rowSelection":  "single"
+                                                            },
+                                                   "dataSourceConfig":  {
+                                                                            "dataSourceGuid":  "$dataSourceGuid_2",
+                                                                            "input":  {
+                                                                                          "propertyInputs":  [
+
+                                                                                                             ]
+                                                                                      }
+                                                                        },
+                                                   "useFilter":  true,
+                                                   "useDefault":  false
+                                               },
+                           "type":  "grid",
+                           "summaryVisibility":  "Show",
+                           "requiresTemplateOptions":  true,
+                           "requiresKey":  true,
+                           "requiresDataSource":  true
+                       }
+                   ]
+    }
 ]
