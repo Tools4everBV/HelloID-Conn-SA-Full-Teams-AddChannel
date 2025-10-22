@@ -169,8 +169,8 @@
                                                                                     "field":  "Id"
                                                                                 },
                                                                                 {
-                                                                                    "headerName":  "Name",
-                                                                                    "field":  "Name"
+                                                                                    "headerName":  "DisplayName",
+                                                                                    "field":  "DisplayName"
                                                                                 },
                                                                                 {
                                                                                     "headerName":  "User",
