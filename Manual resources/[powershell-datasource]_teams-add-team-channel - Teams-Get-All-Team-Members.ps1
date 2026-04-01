@@ -1,39 +1,29 @@
-#######################################################################
-# Template: HelloID SA Delegated form task
-# Name:     Teams - Add Team Channel
-# Date:     04-03-2026
-#######################################################################
 
-# For basic information about delegated form tasks see:
-# https://docs.helloid.com/en/service-automation/delegated-forms/delegated-form-powershell-scripts/add-a-powershell-script-to-a-delegated-form.html
+# Global variables
+# Outcommented as these are set from Global Variables
+# $EntraIdTenantId = ""
+# $EntraIdAppId = ""
+# $EntraIdCertificateBase64String = ""
+# $EntraIdCertificatePassword = ""
 
-# Service automation variables:
-# https://docs.helloid.com/en/service-automation/service-automation-variables/service-automation-variable-reference.html
+# variables configured in form:
+$groupId = $datasource.selectedValue.GroupId
 
-#region init
+$propertiesToSelect = @(
+    "userId",
+    "displayName",
+    "email",
+    "roles",
+    "id"
+) # Properties to select from Microsoft Graph API, comma separated
 
-# Set TLS to accept TLS, TLS 1.1 and TLS 1.2
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
+# Enable TLS1.2
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12
 
+# Set debug logging
 $VerbosePreference = "SilentlyContinue"
 $InformationPreference = "Continue"
 $WarningPreference = "Continue"
-
-# global variables (Automation --> Variable library):
-$TenantId = $EntraIdTenantId
-$AppId = $EntraIdAppId
-$CertificateBase64String = $EntraIdCertificateBase64String
-$CertificatePassword = $EntraIdCertificatePassword
-
-# variables configured in form:
-$groupId = $form.teams.GroupId
-$description = $form.description
-$channelName = $form.ChannelName
-$team = $form.teams.DisplayName
-$type = $form.visibility
-$owners = $form.owners
-
-#endregion init
 
 #region functions
 function Resolve-MicrosoftGraphAPIError {
@@ -202,11 +192,11 @@ function Get-MSEntraCertificate {
 try {
     # Convert base64 certificate string to certificate object
     $actionMessage = "converting base64 certificate string to certificate object"
-    $certificate = Get-MSEntraCertificate -CertificateBase64String $CertificateBase64String -CertificatePassword $CertificatePassword
+    $certificate = Get-MSEntraCertificate -CertificateBase64String $EntraIdCertificateBase64String -CertificatePassword $EntraIdCertificatePassword
 
     # Create access token
     $actionMessage = "creating access token"
-    $entraToken = Get-MSEntraAccessToken -Certificate $certificate -AppId $AppId -TenantId $TenantId
+    $entraToken = Get-MSEntraAccessToken -Certificate $certificate -AppId $EntraIdAppId -TenantId $EntraIdTenantId
 
     # Create headers
     $actionMessage = "creating headers"
@@ -216,52 +206,43 @@ try {
         "Content-Type"     = "application/json"
         "ConsistencyLevel" = "eventual" # Needed to filter on specific attributes (https://docs.microsoft.com/en-us/graph/aad-advanced-queries)
     }
-    $actionMessage = "creating channel"
 
-    $baseGraphUri = "https://graph.microsoft.com/"
-    $createChannelUri = $baseGraphUri + "v1.0/teams/$groupId/channels"
-    
-    $membershipType = if ($type -eq "Private") { "private" } else { "standard" }
-
-    $body = @{
-        "@odata.type"  = "#Microsoft.Graph.channel"
-        membershipType = $membershipType
-        displayName    = $channelName
-        description    = $description
-    }
-
-    # For private channels, owners are included in the create payload.
-    if ($membershipType -eq "private") {
-        $body.members = @()
-        foreach ($owner in $owners) {
-            $body.members += @{
-                "@odata.type"     = "#microsoft.graph.aadUserConversationMember"
-                roles             = @("owner")
-                "user@odata.bind" = "https://graph.microsoft.com/v1.0/users/$($owner.userId)"
-            }
+    # Get members of Team
+    # API docs: https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http
+    $actionMessage = "querying members of Team"
+    $microsoftEntraIDUsers = [System.Collections.ArrayList]@()
+    do {
+        $getMicrosoftEntraIDUsersSplatParams = @{
+            Uri         = "https://graph.microsoft.com/v1.0/teams/$groupId/members?`$top=999"
+            Headers     = $headers
+            Method      = "GET"
+            Verbose     = $false
+            ErrorAction = "Stop"
         }
-    }
+        if (-not[string]::IsNullOrEmpty($getMicrosoftEntraIDUsersResponse.'@odata.nextLink')) {
+            $getMicrosoftEntraIDUsersSplatParams["Uri"] = $getMicrosoftEntraIDUsersResponse.'@odata.nextLink'
+        }
+        
+        $getMicrosoftEntraIDUsersResponse = $null
+        $getMicrosoftEntraIDUsersResponse = Invoke-RestMethod @getMicrosoftEntraIDUsersSplatParams
+    
+        # Select only specified properties to limit memory usage
+        $getMicrosoftEntraIDUsersResponse.Value = $getMicrosoftEntraIDUsersResponse.Value | Select-Object $propertiesToSelect
 
-    $bodyJson = $body | ConvertTo-Json -Depth 10
-    $newChannel = Invoke-RestMethod -Method POST -Uri $createChannelUri -Body $bodyJson -Headers $headers -Verbose:$false
+        if ($getMicrosoftEntraIDUsersResponse.Value -is [array]) {
+            [void]$microsoftEntraIDUsers.AddRange($getMicrosoftEntraIDUsersResponse.Value)
+        }
+        else {
+            [void]$microsoftEntraIDUsers.Add($getMicrosoftEntraIDUsersResponse.Value)
+        }
+    } while (-not[string]::IsNullOrEmpty($getMicrosoftEntraIDUsersResponse.'@odata.nextLink'))
+    Write-Information "Queried members of Team [$groupId]. Result count: $(@($microsoftEntraIDUsers).Count)"
 
-    if ($membershipType -eq "private") {
-        Write-Information "Successfully created private channel [$channelName] with owners [$(($owners | ForEach-Object { $_.displayName }) -join ', ')] for Team [$team]."
+    # Send results to HelloID
+    $actionMessage = "sending results to HelloID"
+    $microsoftEntraIDUsers | ForEach-Object {
+        Write-Output $_
     }
-    else {
-        Write-Information "Successfully created standard channel [$channelName] for Team [$team]."
-    }
-
-    $Log = @{
-        Action            = "CreateResource" # optional. ENUM (undefined = default) 
-        System            = "MicrosoftTeams" # optional (free format text) 
-        Message           = "Successfully created $membershipType channel [$channelName] for Team [$team]." # required (free format text) 
-        IsError           = $false # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
-        TargetDisplayName = $channelName # optional (free format text)
-        TargetIdentifier  = $($newChannel.id) # optional (free format text)
-    }
-    #send result back  
-    Write-Information -Tags "Audit" -MessageData $log
 }
 catch {
     $ex = $PSItem
@@ -275,15 +256,6 @@ catch {
         $auditMessage = "Error $($actionMessage). Error: $($ex.Exception.Message)"
         $warningMessage = "Error at Line [$($ex.InvocationInfo.ScriptLineNumber)]: $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
     }
-    $Log = @{
-        Action            = "CreateResource" # optional. ENUM (undefined = default) 
-        System            = "MicrosoftTeams" # optional (free format text) 
-        Message           = $auditMessage # required (free format text) 
-        IsError           = $true # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
-        TargetDisplayName = $channelName # optional (free format text) 
-        TargetIdentifier  = $($newChannel.id) # optional (free format text) 
-    }
-    Write-Information -Tags "Audit" -MessageData $log
     Write-Warning $warningMessage
     Write-Error $auditMessage
 }
