@@ -21,8 +21,8 @@ By using this delegated form , you can create Microsoft Teams channels through M
   The connector authenticates to Microsoft Graph using a certificate (client credentials flow).
 - **Microsoft Graph application permissions**:
   Configure and grant admin consent for the following minimal application permissions:
-  - `Channel.Create`
-  - `Group.Read.All`
+  - `Channel.Create.Group`
+  - `GroupMember.Read.All`
 
 ### Connection settings
 
