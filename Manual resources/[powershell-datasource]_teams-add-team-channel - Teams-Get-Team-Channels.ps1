@@ -1,14 +1,14 @@
 #######################################################################
-# Template: HelloID SA Delegated form task
-# Name:     Teams - Add Team Channel
-# Date:     04-03-2026
+# Template: HelloID SA Powershell data source
+# Name: teams-add-team-channel | Teams-Get-Team-Channels
+# Date: 04-03-2026
 #######################################################################
 
-# For basic information about delegated form tasks see:
-# https://docs.helloid.com/en/service-automation/delegated-forms/delegated-form-powershell-scripts/add-a-powershell-script-to-a-delegated-form.html
+# For basic information about powershell data sources see:
+# https://docs.helloid.com/en/service-automation/dynamic-forms/data-sources/powershell-data-sources.html
 
 # Service automation variables:
-# https://docs.helloid.com/en/service-automation/service-automation-variables/service-automation-variable-reference.html
+# https://docs.helloid.com/en/service-automation/service-automation-variables.html
 
 #region init
 
@@ -24,12 +24,7 @@ $WarningPreference = "Continue"
 # $EntraIdCertificatePassword = ""
 
 # variables configured in form:
-$groupId = $form.teams.GroupId
-$description = $form.description
-$channelName = $form.ChannelName
-$team = $form.teams.DisplayName
-$type = $form.visibility
-$owners = $form.owners
+$groupId = $datasource.selectedValue.GroupId
 
 #endregion init
 
@@ -190,52 +185,22 @@ try {
         "ConsistencyLevel" = "eventual" # Needed to filter on specific attributes (https://docs.microsoft.com/en-us/graph/aad-advanced-queries)
     } 
 
-    $actionMessage = "creating channel"
 
-    $baseGraphUri = "https://graph.microsoft.com/"
-    $createChannelUri = $baseGraphUri + "v1.0/teams/$groupId/channels"
+    $actionMessage = "retrieving channels for Team with GroupId $groupId"
+
+    $baseSearchUri = "https://graph.microsoft.com/"
+    $channelUri = $baseSearchUri + "v1.0/teams" + "/$groupId/channels"
+
+    $channels = Invoke-RestMethod -Uri $channelUri -Method Get -Headers $authorization -Verbose:$false
     
-    $membershipType = if ($type -eq "Private") { "private" } else { "standard" }
-
-    $body = @{
-        "@odata.type"  = "#Microsoft.Graph.channel"
-        membershipType = $membershipType
-        displayName    = $channelName
-        description    = $description
-    }
-
-    # For private channels, owners are included in the create payload.
-    if ($membershipType -eq "private") {
-        $body.members = @()
-        foreach ($owner in $owners) {
-            $body.members += @{
-                "@odata.type"     = "#microsoft.graph.aadUserConversationMember"
-                roles             = @("owner")
-                "user@odata.bind" = "https://graph.microsoft.com/v1.0/users/$($owner.userId)"
-            }
+    foreach ($channel in $channels.value) {
+        $returnObject = @{
+            Channel = $channel.DisplayName
+            Type    = $channel.MembershipType
+            Id      = $channel.Id
         }
+        Write-Output $returnObject        
     }
-
-    $bodyJson = $body | ConvertTo-Json -Depth 10
-    $newChannel = Invoke-RestMethod -Method POST -Uri $createChannelUri -Body $bodyJson -Headers $authorization -Verbose:$false
-
-    if ($membershipType -eq "private") {
-        Write-Information "Successfully created private channel [$channelName] with owners [$(($owners | ForEach-Object { $_.displayName }) -join ', ')] for Team [$team]."
-    }
-    else {
-        Write-Information "Successfully created standard channel [$channelName] for Team [$team]."
-    }
-
-    $Log = @{
-        Action            = "CreateResource" # optional. ENUM (undefined = default) 
-        System            = "MicrosoftTeams" # optional (free format text) 
-        Message           = "Successfully created $membershipType channel [$channelName] for Team [$team]." # required (free format text) 
-        IsError           = $false # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
-        TargetDisplayName = $channelName # optional (free format text)
-        TargetIdentifier  = $($newChannel.id) # optional (free format text)
-    }
-    #send result back  
-    Write-Information -Tags "Audit" -MessageData $log
 }
 catch {
     $ex = $PSItem
@@ -249,15 +214,6 @@ catch {
         $auditMessage = "Error $($actionMessage). Error: $($ex.Exception.Message)"
         $warningMessage = "Error at Line [$($ex.InvocationInfo.ScriptLineNumber)]: $($ex.InvocationInfo.Line). Error: $($ex.Exception.Message)"
     }
-    $Log = @{
-        Action            = "CreateResource" # optional. ENUM (undefined = default) 
-        System            = "MicrosoftTeams" # optional (free format text) 
-        Message           = $auditMessage # required (free format text) 
-        IsError           = $true # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
-        TargetDisplayName = $channelName # optional (free format text) 
-        TargetIdentifier  = $($newChannel.id) # optional (free format text) 
-    }
-    Write-Information -Tags "Audit" -MessageData $log
     Write-Warning $warningMessage
     Write-Error $auditMessage
 }

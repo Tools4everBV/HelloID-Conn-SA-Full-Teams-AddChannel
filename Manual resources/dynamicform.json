@@ -62,7 +62,8 @@
                                                                                                              ]
                                                                                       }
                                                                         },
-                                                   "useDefault":  false
+                                                   "useDefault":  false,
+                                                   "allowCsvDownload":  true
                                                },
                            "type":  "grid",
                            "summaryVisibility":  "Show",
@@ -90,7 +91,8 @@
                        {
                            "key":  "description",
                            "templateOptions":  {
-                                                   "label":  "Channel Description"
+                                                   "label":  "Channel Description",
+                                                   "required":  true
                                                },
                            "type":  "input",
                            "summaryVisibility":  "Show",
@@ -108,6 +110,10 @@
                                                                                 {
                                                                                     "headerName":  "Channel",
                                                                                     "field":  "Channel"
+                                                                                },
+                                                                                {
+                                                                                    "headerName":  "Type",
+                                                                                    "field":  "Type"
                                                                                 },
                                                                                 {
                                                                                     "headerName":  "Id",
@@ -130,7 +136,8 @@
                                                                                                              ]
                                                                                       }
                                                                         },
-                                                   "useDefault":  false
+                                                   "useDefault":  false,
+                                                   "allowCsvDownload":  true
                                                },
                            "type":  "grid",
                            "summaryVisibility":  "Hide element",
@@ -158,23 +165,19 @@
                            "requiresDataSource":  false
                        },
                        {
-                           "key":  "owner",
+                           "key":  "owners",
                            "templateOptions":  {
-                                                   "label":  "Select owner",
-                                                   "required":  false,
+                                                   "label":  "Select owner(s)",
+                                                   "required":  true,
                                                    "grid":  {
                                                                 "columns":  [
                                                                                 {
-                                                                                    "headerName":  "Id",
-                                                                                    "field":  "Id"
+                                                                                    "headerName":  "Display Name",
+                                                                                    "field":  "displayName"
                                                                                 },
                                                                                 {
-                                                                                    "headerName":  "DisplayName",
-                                                                                    "field":  "DisplayName"
-                                                                                },
-                                                                                {
-                                                                                    "headerName":  "User",
-                                                                                    "field":  "User"
+                                                                                    "headerName":  "User Principal Name",
+                                                                                    "field":  "userPrincipalName"
                                                                                 }
                                                                             ],
                                                                 "height":  300,
@@ -184,14 +187,21 @@
                                                                             "dataSourceGuid":  "$dataSourceGuid_2",
                                                                             "input":  {
                                                                                           "propertyInputs":  [
-
+                                                                                                                 {
+                                                                                                                     "propertyName":  "selectedValue",
+                                                                                                                     "otherFieldValue":  {
+                                                                                                                                             "otherFieldKey":  "teams"
+                                                                                                                                         }
+                                                                                                                 }
                                                                                                              ]
                                                                                       }
                                                                         },
                                                    "useFilter":  true,
-                                                   "useDefault":  false
+                                                   "useDefault":  false,
+                                                   "allowCsvDownload":  true
                                                },
-                           "type":  "grid",
+                           "hideExpression":  "model[\"visibility\"]!==\u0027Private\u0027",
+                           "type":  "multiselectgrid",
                            "summaryVisibility":  "Show",
                            "requiresTemplateOptions":  true,
                            "requiresKey":  true,
